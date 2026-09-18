@@ -7,9 +7,7 @@ import { OwnerLoginDialog } from "./ui/owner-login-dialog";
 
 const links = [
   { label: "Home", href: "#home" },
-  { label: "Rooms & Suites", href: "#rooms" },
-  { label: "Offers", href: "#offers" },
-  { label: "Amenities", href: "#amenities" },
+  { label: "Rooms", href: "#rooms" },
   { label: "Dining", href: "#dining" },
   { label: "Gallery", href: "#gallery" },
   { label: "About", href: "#about" },
@@ -20,6 +18,7 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -31,11 +30,11 @@ export function Navbar() {
     <motion.header
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 z-50 w-full transition-all duration-500 ${
         scrolled
-          ? "bg-forest-950/90 backdrop-blur-md py-3 shadow-lg shadow-black/20 border-b border-gold-500/10"
-          : "bg-linear-to-b from-black/40 to-transparent py-6"
+          ? "bg-forest-950/85 backdrop-blur-xl py-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] border-b border-white/5"
+          : "bg-linear-to-b from-black/50 via-black/10 to-transparent py-6"
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
@@ -43,33 +42,45 @@ export function Navbar() {
           href="#home"
           className="font-display text-xl tracking-wide text-ivory-50 transition-opacity hover:opacity-80"
         >
-          Green<span className="text-gold-500">house</span>
-          <span className="block text-[10px] font-sans font-normal tracking-[0.3em] text-ivory-50/50">
+          Green<span className="text-gold-400">house</span>
+          <span className="block text-[10px] font-sans font-normal tracking-[0.3em] text-ivory-50/45">
             DHARAMKOT · HIMACHAL PRADESH
           </span>
         </a>
 
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav
+          className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 backdrop-blur-sm lg:flex"
+          onMouseLeave={() => setHovered(null)}
+        >
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="group relative py-1 text-sm text-ivory-50/75 transition-colors hover:text-gold-400"
+              onMouseEnter={() => setHovered(link.href)}
+              className="relative rounded-full px-4 py-1.5 text-[13px] text-ivory-50/70 transition-colors duration-200 hover:text-ivory-50"
             >
-              {link.label}
-              <span className="absolute -bottom-0.5 left-0 h-px w-0 bg-gold-400 transition-all duration-300 group-hover:w-full" />
+              {hovered === link.href && (
+                <motion.span
+                  layoutId="nav-hover-pill"
+                  className="absolute inset-0 rounded-full bg-gold-500/15"
+                  transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                />
+              )}
+              <span className="relative z-10">{link.label}</span>
             </a>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <OwnerLoginDialog />
-          <a
+          <motion.a
             href="#booking"
-            className="rounded-full bg-gold-500 px-5 py-2 text-sm font-medium text-forest-950 transition-transform hover:scale-105 hover:bg-gold-400"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="rounded-full bg-gold-500 px-5 py-2 text-sm font-medium text-forest-950 shadow-[0_0_0_0_rgba(201,162,83,0.5)] transition-shadow hover:shadow-[0_0_20px_2px_rgba(201,162,83,0.35)]"
           >
             Book Now
-          </a>
+          </motion.a>
         </div>
 
         <button
@@ -91,25 +102,28 @@ export function Navbar() {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden bg-forest-950 lg:hidden"
           >
-            <div className="flex flex-col gap-4 px-6 pb-6 pt-4">
-              {links.map((link) => (
-                <a
+            <div className="flex flex-col gap-1 px-6 pb-6 pt-4">
+              {links.map((link, i) => (
+                <motion.a
                   key={link.href}
                   href={link.href}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
                   onClick={() => setMobileOpen(false)}
-                  className="text-ivory-50/80 hover:text-gold-400"
+                  className="rounded-lg px-3 py-2.5 text-ivory-50/80 transition-colors hover:bg-white/5 hover:text-gold-400"
                 >
                   {link.label}
-                </a>
+                </motion.a>
               ))}
               <a
                 href="#booking"
                 onClick={() => setMobileOpen(false)}
-                className="mt-2 rounded-full bg-gold-500 px-5 py-2 text-center text-sm font-medium text-forest-950"
+                className="mt-3 rounded-full bg-gold-500 px-5 py-2.5 text-center text-sm font-medium text-forest-950"
               >
                 Book Now
               </a>
-              <div className="pt-2">
+              <div className="pt-3">
                 <OwnerLoginDialog />
               </div>
             </div>

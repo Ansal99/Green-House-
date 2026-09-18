@@ -13,7 +13,7 @@ export function AboutOwner() {
           transition={{ duration: 0.8 }}
           className="relative"
         >
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl shadow-xl">
+          <div className="relative aspect-4/5 overflow-hidden rounded-2xl shadow-xl">
             <img
               src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=900&auto=format&fit=crop"
               alt="Rahul Kapoor, owner of Green House Dharamkot"
@@ -40,9 +40,9 @@ export function AboutOwner() {
             Meet Rahul Kapoor
           </h2>
           <p className="mt-6 text-stone-600 leading-relaxed">
-            Rahul grew up watching the mist roll over Dharamkot's pine
+            Rahul grew up watching the mist roll over Dharamkot&apos;s pine
             ridges, long before this stretch of hillside became a stop on
-            every traveller's map. Green House began as a small family
+            every traveller&apos;s map. Green House began as a small family
             home — the kind with too many rooms and too much tea — and
             slowly grew into a place where strangers kept coming back as
             friends.
@@ -50,7 +50,7 @@ export function AboutOwner() {
           <p className="mt-4 text-stone-600 leading-relaxed">
             Today he still greets most guests personally, keeps the garden
             himself on quiet mornings, and insists that the best part of
-            Dharamkot isn't the view from the room — it's stepping outside
+            Dharamkot isn&apos;t the view from the room — it&apos;s stepping outside
             it. That philosophy shapes everything here, from the
             handpicked local breakfast to the walking trails he maps out
             himself for anyone who asks.
