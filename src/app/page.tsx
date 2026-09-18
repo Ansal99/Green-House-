@@ -6,7 +6,7 @@ import { Dining } from "@/components/dining";
 import { GalleryMarquee } from "@/components/gallery-marquee";
 import { AboutOwner } from "@/components/about-owner";
 import { Offers } from "@/components/offers";
-import { Booking } from "@/components/booking";
+import { ReservationCTA } from "@/components/reservation-cta";
 import { Location } from "@/components/location";
 import { Reviews } from "@/components/reviews";
 import { FAQ } from "@/components/faq";
@@ -24,7 +24,7 @@ export default function Home() {
       <GalleryMarquee />
       <AboutOwner />
       <Offers />
-      <Booking />
+      <ReservationCTA />
       <Location />
       <Reviews />
       <FAQ />

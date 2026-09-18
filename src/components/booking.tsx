@@ -1,9 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, PartyPopper } from "lucide-react";
-import { rooms, inr } from "@/lib/rooms";
+import { ArrowLeft, ArrowRight, Check, PartyPopper, MessageSquare, Calendar } from "lucide-react";
+import Link from "next/link";
+import { inr } from "@/lib/rooms";
+import { useSiteContent } from "@/lib/site-content";
+
+export type BookingProps = {
+  initialRoom?: string;
+  initialCheckIn?: string;
+  initialCheckOut?: string;
+  initialAdults?: number;
+  initialChildren?: number;
+  initialOffer?: string;
+  isStandalonePage?: boolean;
+};
 
 type BookingData = {
   checkIn: string;
@@ -32,17 +44,53 @@ const emptyBooking: BookingData = {
 };
 
 const fieldClass =
-  "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-ivory-50 outline-none transition-colors placeholder:text-ivory-50/30 focus:border-gold-500/60 focus:bg-white/10 [color-scheme:dark]";
+  "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-ivory-50 outline-none transition-all placeholder:text-ivory-50/30 focus:border-gold-400 focus:bg-white/10 focus:ring-1 focus:ring-gold-400/50 [color-scheme:dark]";
 
 const labelClass =
-  "mb-2 block text-[11px] uppercase tracking-[0.2em] text-ivory-50/50";
+  "mb-2 block text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-400/90";
 
-export function Booking() {
-  const [step, setStep] = useState(0);
-  const [data, setData] = useState<BookingData>(emptyBooking);
+export function Booking({
+  initialRoom = "",
+  initialCheckIn = "",
+  initialCheckOut = "",
+  initialAdults = 2,
+  initialChildren = 0,
+  initialOffer = "",
+  isStandalonePage = false,
+}: BookingProps) {
+  const { rooms } = useSiteContent();
+  const [step, setStep] = useState(() => (initialRoom ? 1 : 0));
+  const [data, setData] = useState<BookingData>(() => ({
+    ...emptyBooking,
+    roomSlug: initialRoom,
+    checkIn: initialCheckIn,
+    checkOut: initialCheckOut,
+    adults: initialAdults,
+    children: initialChildren,
+    notes: initialOffer ? `Claiming package: ${initialOffer}` : "",
+  }));
   const [done, setDone] = useState(false);
 
-  const today = new Date().toISOString().split("T")[0];
+  const [today] = useState(() => new Date().toISOString().split("T")[0]);
+
+  // Listen to quick-book events from Hero or Room cards
+  useEffect(() => {
+    const handleQuickBook = (e: Event) => {
+      const customEvent = e as CustomEvent<Partial<BookingData>>;
+      if (customEvent.detail) {
+        setData((prev) => ({
+          ...prev,
+          ...customEvent.detail,
+        }));
+        if (customEvent.detail.roomSlug) {
+          setStep((prev) => Math.max(prev, 1));
+        }
+      }
+    };
+
+    window.addEventListener("greenhouse-quick-book", handleQuickBook);
+    return () => window.removeEventListener("greenhouse-quick-book", handleQuickBook);
+  }, []);
 
   const set = <K extends keyof BookingData>(key: K, value: BookingData[K]) =>
     setData((d) => ({ ...d, [key]: value }));
@@ -76,14 +124,61 @@ export function Booking() {
     setDone(false);
   };
 
+  // Pre-filled WhatsApp message
+  const whatsappUrl = useMemo(() => {
+    const roomText = selectedRoom ? `for the ${selectedRoom.name}` : "for a room";
+    const dateText =
+      data.checkIn && data.checkOut
+        ? `from ${formatDate(data.checkIn)} to ${formatDate(data.checkOut)} (${nights} nights)`
+        : "for upcoming dates";
+    const guestText = `${guests} guest${guests > 1 ? "s" : ""}`;
+    const message = `Hello Rahul! I would like to check availability at Green House Dharamkot ${roomText} ${dateText} for ${guestText}. My name is ${data.name || "a traveler"}.`;
+    return `https://wa.me/919816048210?text=${encodeURIComponent(message)}`;
+  }, [selectedRoom, data.checkIn, data.checkOut, nights, guests, data.name]);
+
   return (
     <section
       id="booking"
-      className="relative overflow-hidden bg-forest-900 py-24"
+      className={`relative overflow-hidden bg-forest-950 ${isStandalonePage ? "min-h-screen py-10 sm:py-16" : "py-28"}`}
     >
-      <div className="pointer-events-none absolute right-0 top-0 size-[28rem] rounded-full bg-gold-500/6 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-0 size-[32rem] rounded-full bg-gold-500/8 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 bottom-0 size-[28rem] rounded-full bg-gold-500/5 blur-3xl" />
 
-      <div className="relative mx-auto max-w-4xl px-6">
+      <div className="relative mx-auto max-w-5xl px-6">
+        {/* Standalone Page Luxury Header */}
+        {isStandalonePage && (
+          <div className="mb-12 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
+            <Link
+              href="/"
+              className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-ivory-50/80 transition-all hover:border-gold-400 hover:bg-white/10 hover:text-gold-300"
+            >
+              <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
+              <span>← Back to Home</span>
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <div className="grid size-9 place-items-center rounded-full border border-gold-500/40 bg-forest-900 font-display text-sm font-bold text-gold-400">
+                GH
+              </div>
+              <div className="hidden sm:block">
+                <p className="font-display text-base text-ivory-50">Green <span className="text-gold-400 italic font-normal">House</span></p>
+                <p className="text-[10px] tracking-widest text-ivory-50/50 uppercase">Upper Dharamkot · 2,100m</p>
+              </div>
+            </div>
+
+            <a
+              href="https://wa.me/919816048210?text=Hello%20Rahul,%20I%20have%20a%20question%20about%20booking%20at%20Green%20House."
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-xs text-emerald-300 transition-colors hover:bg-emerald-900/50"
+            >
+              <MessageSquare className="size-3.5 text-emerald-400" />
+              <span>WhatsApp Rahul</span>
+            </a>
+          </div>
+        )}
+
+        {/* Section Heading */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -91,25 +186,40 @@ export function Booking() {
           transition={{ duration: 0.7 }}
           className="text-center"
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-gold-500">
-            Reserve Your Stay
-          </p>
-          <h2 className="mt-3 font-display text-3xl text-ivory-50 md:text-4xl">
-            Booking
+          <div className="inline-flex items-center gap-2 rounded-full border border-gold-500/30 bg-gold-500/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-gold-300">
+            <Calendar className="size-3 text-gold-400" />
+            Direct Reservation
+          </div>
+          <h2 className="mt-4 font-display text-4xl font-semibold text-ivory-50 sm:text-5xl">
+            Reserve Your Mountain Stay
           </h2>
-          <p className="mx-auto mt-5 max-w-lg leading-relaxed text-ivory-50/60">
-            Four short steps. You&apos;ll get a confirmation from Rahul on
-            WhatsApp within a few hours — no advance payment needed to hold a
-            room.
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ivory-50/70">
+            Reserve directly with host Rahul Kapoor. Zero advance payment needed —
+            we verify dates and confirm via WhatsApp or phone within a few hours.
           </p>
+
+          {/* Quick WhatsApp Alternative Banner */}
+          <div className="mx-auto mt-6 flex max-w-lg items-center justify-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs text-emerald-200 backdrop-blur-sm">
+            <MessageSquare className="size-4 shrink-0 text-emerald-400" />
+            <span>Prefer instant WhatsApp chat?</span>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full bg-emerald-500 px-3.5 py-1 text-[11px] font-semibold text-forest-950 transition-colors hover:bg-emerald-400"
+            >
+              Chat on WhatsApp →
+            </a>
+          </div>
         </motion.div>
 
+        {/* Main Booking Container */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.8, delay: 0.15 }}
-          className="mt-12 overflow-hidden rounded-3xl border border-white/10 bg-forest-950/60 backdrop-blur-sm"
+          className="mt-12 overflow-hidden rounded-3xl border border-gold-500/20 bg-forest-900/60 shadow-2xl backdrop-blur-xl"
         >
           {/* Stepper */}
           {!done && (
@@ -124,19 +234,19 @@ export function Booking() {
                       className="flex shrink-0 items-center gap-2.5 disabled:cursor-default"
                     >
                       <span
-                        className={`grid size-8 place-items-center rounded-full border text-xs transition-colors duration-300 ${
+                        className={`grid size-8 place-items-center rounded-full border text-xs font-semibold transition-colors duration-300 ${
                           i < step
                             ? "border-gold-500 bg-gold-500 text-forest-950"
                             : i === step
-                              ? "border-gold-500 text-gold-400"
+                              ? "border-gold-400 bg-gold-500/20 text-gold-300 ring-2 ring-gold-400/30"
                               : "border-white/15 text-ivory-50/30"
                         }`}
                       >
                         {i < step ? <Check className="size-4" /> : i + 1}
                       </span>
                       <span
-                        className={`hidden text-xs tracking-wide transition-colors duration-300 sm:block ${
-                          i <= step ? "text-ivory-50" : "text-ivory-50/30"
+                        className={`hidden text-xs font-medium tracking-wider uppercase transition-colors duration-300 sm:block ${
+                          i <= step ? "text-ivory-50" : "text-ivory-50/35"
                         }`}
                       >
                         {label}
@@ -396,31 +506,40 @@ export function Booking() {
                         {data.notes && <Row label="Notes" value={data.notes} />}
                       </dl>
 
-                      <div className="mt-6 rounded-2xl bg-gold-500/10 p-6">
-                        <div className="flex items-center justify-between text-sm text-ivory-50/70">
+                      <div className="mt-6 rounded-2xl border border-gold-500/25 bg-forest-950/80 p-6 shadow-inner">
+                        <div className="flex items-center justify-between text-sm text-ivory-50/75">
                           <span>
-                            {inr(selectedRoom?.price ?? 0)} × {nights}{" "}
-                            {nights === 1 ? "night" : "nights"}
+                            {selectedRoom?.name} ({inr(selectedRoom?.price ?? 0)} × {nights}{" "}
+                            {nights === 1 ? "night" : "nights"})
                           </span>
-                          <span>{inr(total)}</span>
+                          <span className="font-medium text-ivory-50">{inr(total)}</span>
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-sm text-ivory-50/70">
-                          <span>Breakfast</span>
-                          <span className="text-gold-400">Included</span>
+                        <div className="mt-2.5 flex items-center justify-between text-xs text-ivory-50/65">
+                          <span className="flex items-center gap-1.5 text-emerald-400">
+                            <Check className="size-3.5" /> Farmhouse Himalayan Breakfast
+                          </span>
+                          <span className="font-semibold text-emerald-400 uppercase tracking-wider text-[10px]">Complimentary</span>
+                        </div>
+                        <div className="mt-1.5 flex items-center justify-between text-xs text-ivory-50/65">
+                          <span className="flex items-center gap-1.5 text-emerald-400">
+                            <Check className="size-3.5" /> Unlimited Kangra Tea &amp; Fibre Wi-Fi
+                          </span>
+                          <span className="font-semibold text-emerald-400 uppercase tracking-wider text-[10px]">Included</span>
                         </div>
                         <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
-                          <span className="text-sm text-ivory-50">
-                            Estimated total
-                          </span>
-                          <span className="font-display text-2xl text-gold-400">
+                          <div>
+                            <span className="text-sm font-semibold text-ivory-50">
+                              Estimated Total
+                            </span>
+                            <span className="block text-[10.5px] text-ivory-50/50">All mountain amenities included</span>
+                          </div>
+                          <span className="font-display text-3xl font-bold text-gold-400">
                             {inr(total)}
                           </span>
                         </div>
-                        <p className="mt-3 text-[11px] leading-relaxed text-ivory-50/40">
-                          Taxes as applicable. Nothing is charged now — this
-                          sends a request, and Rahul confirms availability
-                          before any payment.
-                        </p>
+                        <div className="mt-4 rounded-xl bg-gold-500/10 p-3 text-[11.5px] leading-relaxed text-gold-300">
+                          ✦ <strong>Zero Advance Charged Now</strong>: This sends your reservation inquiry directly to Rahul Kapoor. He confirms availability and coordinates your mountain arrival before any payment.
+                        </div>
                       </div>
                     </div>
                   )}
@@ -517,7 +636,7 @@ function CounterButton({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-8 place-items-center rounded-lg text-ivory-50/70 transition-colors hover:bg-white/10 hover:text-ivory-50 disabled:pointer-events-none disabled:opacity-25"
+      className="grid size-8 place-items-center rounded-lg text-ivory-50/70 transition-colors hover:bg-white/10 hover:text-ivory-50 disabled:pointer-events-none disabled:opacity-25 cursor-pointer"
     >
       {symbol}
     </button>
@@ -537,7 +656,10 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function formatDate(value: string) {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-IN", {
+  const [year, month, day] = value.split("-").map(Number);
+  if (!year || !month || !day) return value;
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
     year: "numeric",

@@ -1,31 +1,63 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "lenis/dist/lenis.css";
 
 @custom-variant dark (&:is(.dark *));
 
+html {
+  scroll-behavior: auto !important;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto !important;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.875rem;
 
-  /* Green House brand palette */
-  --forest-950: oklch(0.19 0.03 155);
-  --forest-900: oklch(0.24 0.035 155);
-  --forest-800: oklch(0.30 0.04 155);
-  --forest-700: oklch(0.38 0.045 155);
-  --gold-500: oklch(0.72 0.10 85);
-  --gold-400: oklch(0.80 0.09 88);
-  --ivory-50: oklch(0.98 0.01 95);
-  --ivory-100: oklch(0.95 0.015 90);
-  --stone-600: oklch(0.48 0.01 90);
+  /* Green House Boutique Mountain Retreat Palette */
+  /* Royal Obsidian Charcoal (replacing heavy green with prestigious dark slate/ebony) */
+  --forest-950: oklch(0.155 0.012 260); /* #111216 - Velvet Royal Obsidian */
+  --forest-900: oklch(0.205 0.016 260); /* #191B22 - Highland Graphite */
+  --forest-800: oklch(0.270 0.020 260); /* #252834 - Deep Midnight Slate */
+  --forest-700: oklch(0.355 0.035 160); /* #2E4A3E - Muted Mountain Sage */
+  
+  /* Imperial Champagne Gold & Burnished Bronze */
+  --gold-600: oklch(0.60 0.115 75);    /* #9E7734 - Burnished Antique Bronze */
+  --gold-500: oklch(0.77 0.118 82);    /* #D8B257 - Imperial Radiant Champagne Gold */
+  --gold-400: oklch(0.85 0.090 85);    /* #E8CD89 - Soft Luminous Champagne */
+  --gold-300: oklch(0.92 0.048 88);    /* #F2E4CB - Shimmer Sand */
+  
+  /* Cashmere Warm Stone & Himalayan Mountain Linen */
+  --ivory-50: oklch(0.985 0.008 85);   /* #FAF7F2 - Pure Cashmere Mountain Linen */
+  --ivory-100: oklch(0.958 0.014 82);  /* #F3EDE4 - Warm Himalayan Sandstone */
+  --ivory-200: oklch(0.925 0.018 82);  /* #E9E1D4 - Soft Limestone */
+  
+  --stone-600: oklch(0.48 0.015 80);   /* #68655E - Warm Weathered Slate */
+  --stone-800: oklch(0.24 0.015 260);  /* #20222A - Obsidian Slate */
 
-  /* shadcn semantic tokens, mapped to our brand */
+  /* shadcn semantic tokens */
   --background: var(--ivory-50);
   --foreground: var(--forest-950);
   --card: oklch(1 0 0);
   --card-foreground: var(--forest-950);
   --popover: oklch(1 0 0);
   --popover-foreground: var(--forest-950);
-  --primary: var(--forest-900);
+  --primary: var(--forest-950);
   --primary-foreground: var(--ivory-50);
   --secondary: var(--gold-500);
   --secondary-foreground: var(--forest-950);
@@ -34,8 +66,8 @@
   --accent: var(--gold-400);
   --accent-foreground: var(--forest-950);
   --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.9 0.01 90);
-  --input: oklch(0.9 0.01 90);
+  --border: oklch(0.91 0.012 85);
+  --input: oklch(0.91 0.012 85);
   --ring: var(--gold-500);
 }
 
@@ -63,16 +95,21 @@
   --color-forest-900: var(--forest-900);
   --color-forest-800: var(--forest-800);
   --color-forest-700: var(--forest-700);
+  --color-gold-600: var(--gold-600);
   --color-gold-500: var(--gold-500);
   --color-gold-400: var(--gold-400);
+  --color-gold-300: var(--gold-300);
   --color-ivory-50: var(--ivory-50);
   --color-ivory-100: var(--ivory-100);
+  --color-ivory-200: var(--ivory-200);
   --color-stone-600: var(--stone-600);
+  --color-stone-800: var(--stone-800);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
 
   --animate-border-beam: border-beam calc(var(--duration, 6) * 1s) infinite linear;
 
@@ -88,14 +125,74 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground antialiased selection:bg-gold-500/25 selection:text-forest-950;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  h1, h2, h3, .font-display {
-  font-family: var(--font-display), serif;
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.015em;
+  }
 }
-  ::selection {
-    background: var(--gold-400);
-    color: var(--forest-950);
-  }
+
+/* Custom refined scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ivory-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-500);
+  border-radius: 9999px;
+  border: 2px solid var(--ivory-100);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-600);
+}
+
+html[data-theme="dark"] {
+  --background: var(--forest-950);
+  --foreground: var(--ivory-50);
+  --card: oklch(0.185 0.014 260);
+  --card-foreground: var(--ivory-50);
+  --popover: oklch(0.185 0.014 260);
+  --popover-foreground: var(--ivory-50);
+  --muted: var(--forest-900);
+  --muted-foreground: oklch(0.76 0.015 85);
+  --border: oklch(0.27 0.018 260);
+  --input: oklch(0.27 0.018 260);
+}
+
+html[data-theme="dark"] body {
+  background: var(--forest-950);
+  color: var(--ivory-50);
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--forest-950);
+}
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  border-color: var(--forest-950);
+}
+
+html[data-theme="dark"] .bg-ivory-50 {
+  background-color: var(--forest-950) !important;
+}
+
+html[data-theme="dark"] .bg-ivory-100 {
+  background-color: var(--forest-900) !important;
+}
+
+html[data-theme="dark"] .text-forest-950,
+html[data-theme="dark"] .text-forest-900 {
+  color: var(--ivory-50) !important;
+}
+
+html[data-theme="dark"] .text-stone-600 {
+  color: oklch(0.76 0.015 85) !important;
+}
+
+html[data-theme="dark"] .bg-card {
+  background-color: var(--card) !important;
 }
